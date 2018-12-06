@@ -10,8 +10,6 @@ from selenium import webdriver
 #第二部是华语男、女的歌手主页         b
 #第三部下载歌手主页歌曲              c
 
-if not os.path.exists("home_html"):
-    os.mkdir("home_html")
 if not os.path.exists("song"):
     os.mkdir("song")
 if not os.path.exists("华语男"):
