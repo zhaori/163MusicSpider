@@ -12,6 +12,8 @@ from selenium import webdriver
 
 if not os.path.exists("home_html"):
     os.mkdir("home_html")
+if not os.path.exists("song"):
+    os.mkdir("song")
 if not os.path.exists("华语男"):
     os.mkdir("华语男")
 if not os.path.exists("华语女"):
@@ -41,8 +43,6 @@ def upgrade_name(api,path,htmlname):
             b = soup.find_all("a", class_="nm nm-icn f-thide s-fc0")
             with open(htmlname,"a+",encoding="utf-8") as f:
                 f.write(str(b))
-
-
 
 ##################################获取具体歌手主页的ID#####################################
 gesou_text = []  # 歌手名字列表
@@ -92,9 +92,6 @@ def set_womam(htmlname,name):
             return song_name['value']
 
 
-#upgrade_name(api=nv_api,path=n_path,htmlname=html_name2)
-#set_set(htmlname=html_name2,name="张碧晨",num="1")
-
 #####################################获取到歌手的主页歌曲####################################
 def song_index(id,name):
     s=webdriver.PhantomJS()
@@ -109,12 +106,51 @@ def song_index(id,name):
     with open(name+".htm","w",encoding="utf-8") as f2:
         f2.write(str(a))
 
+###############################开始下载歌曲###################################
+def song_down(sname):
+    # 下载函数
+    id_ = []
+    id_list = []  # 歌曲ID大集合
+    name_list = []  # 歌名列表
+    song_id = dict()  # 歌曲真实ID
+
+    name = input("输入歌手名：")
+    soup2 = BeautifulSoup(open(name+".htm", encoding="utf-8"), 'html.parser')
+    soup2.find_all("span", {"class": "txt"})
+    id_song = soup2.find_all("a")
+    name_song = soup2.find_all("b")
+    relink = '\/song\?id=(.*)'
+    for i in id_song:
+        id_.append(i["href"])
+
+    for id in range(0, 50):
+        data = re.findall(relink, id_[id])
+        id_list.append(str(data).strip("[']"))
+
+    for i in name_song:
+        name_list.append(i["title"])
+
+    for i in range(0, 50):
+        song_id["song"] = name_list[i]
+        song_id["id"] = id_list[i]
+        if sname in song_id['song']:
+            api = "http://music.163.com/song/media/outer/url?id=" + \
+                song_id["id"] + ".mp3"
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36"}
+            url_res = requests.post(api, headers=headers)
+            with open(r"./song/"+sname + ".mp3", "wb") as f:
+                f.write(url_res.content)
+
 def song_down_all(name):
     # 全部下载
     id_ = []
     id_list = []  # 歌曲ID大集合
     name_list = []  # 歌名列表
     song_id = dict()  # 歌曲真实ID
+    sg_path = "./song/" + name + "/"
+    if not os.path.exists(sg_path):
+        os.mkdir(sg_path)
     soup2 = BeautifulSoup(open(name+".htm", encoding="utf-8"), 'html.parser')
     id_song = soup2.find_all("a")
     name_song = soup2.find_all("b")
@@ -136,5 +172,6 @@ def song_down_all(name):
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36"}
         url_res = requests.post(api, headers=headers)
-        with open(r"./song/"+song_id["song"] + ".mp3", "wb") as f:
+        with open(sg_path+song_id["song"] + ".mp3", "wb") as f:
             f.write(url_res.content)
+            print(song_id["song"])
