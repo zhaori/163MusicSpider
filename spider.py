@@ -1,14 +1,4 @@
-import re
-import os
-import sys
-import selenium
-import requests
-from api import *
-from config import *
-from bs4 import BeautifulSoup
-from selenium import webdriver
-
-
+from __init__ import *
 if __name__ == '__main__':
     xs = "1.更新数据来源  2.下载歌曲"
     print(xs)

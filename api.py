@@ -1,9 +1,4 @@
-import re
-import os
-import selenium
-import requests
-from config import *
-from bs4 import BeautifulSoup
+from __init__ import *
 from selenium import webdriver
 
 #第一部分是大的类别比如华语男华语女等  a
