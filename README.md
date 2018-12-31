@@ -1,5 +1,5 @@
 # 163MusicSpider
-基于Python3.6 +PhantomJS开发 
+基于Python3.6 +PhantomJS开发 （经过测试，同样适用于X86 Linux，MacOs，以及arm平台的Linux）
 
 实现了根据歌手名下载歌曲的功能
 
