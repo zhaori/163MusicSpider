@@ -1,5 +1,4 @@
-from __init__ import *
-from selenium import webdriver
+from config import *
 
 #第一部分是大的类别比如华语男华语女等  a
 #第二部是华语男、女的歌手主页         b
@@ -20,22 +19,50 @@ def upgrade_name(api,path,htmlname):
 #更新歌手，歌曲之类的
 #集合所有歌手和歌手的主页地址ID
 #path是大类别路径路径 htmlname是分类比如华语男
-    for i in range(65,91):
-        url_index=api+str(i)
-        s = webdriver.PhantomJS()
-        s.get(url_index)
-        s.switch_to_frame("contentFrame")
-        data = s.page_source
-        s.quit()
-        with open(path+str(i), "w", encoding="utf-8") as f:
-            f.write(str(data))
+    a = [i for i in range(65, 91)]
+    def t1():
+        for i in a[0:13]:
+            url_index = api + str(i)
+            brow = webdriver.PhantomJS()
+            brow.get(url_index)
+            brow.switch_to_frame("contentFrame")
+            data = brow.page_source
+            brow.quit()
+            with open(path + str(i), "w", encoding="utf-8") as f:
+                f.write(str(data))
+        for root, list, file_name in os.walk(path):
+            for i in file_name:
+                soup = BeautifulSoup(open(path + i, "r", encoding="utf-8"), 'html.parser')
+                b = soup.find_all("a", class_="nm nm-icn f-thide s-fc0")
+                with open(htmlname, "a+", encoding="utf-8") as f:
+                    f.write(str(b))
 
-    for root,list,file_name in os.walk(path):
-        for i in file_name:
-            soup = BeautifulSoup(open(path + i, "r", encoding="utf-8"), 'html.parser')
-            b = soup.find_all("a", class_="nm nm-icn f-thide s-fc0")
-            with open(htmlname,"a+",encoding="utf-8") as f:
-                f.write(str(b))
+    def t2():
+        for i in a[13:26]:
+            url_index = api + str(i)
+            brow = webdriver.PhantomJS()
+            brow.get(url_index)
+            brow.switch_to_frame("contentFrame")
+            data = brow.page_source
+            brow.quit()
+            with open(path + str(i), "w", encoding="utf-8") as f:
+                f.write(str(data))
+        for root, list, file_name in os.walk(path):
+            for i in file_name:
+                soup = BeautifulSoup(open(path + i, "r", encoding="utf-8"), 'html.parser')
+                b = soup.find_all("a", class_="nm nm-icn f-thide s-fc0")
+                with open(htmlname, "a+", encoding="utf-8") as f:
+                    f.write(str(b))
+
+    thead_list = []
+    tt1 = threading.Thread(target=t1)
+    thead_list.append(tt1)
+    tt2 = threading.Thread(target=t2)
+    thead_list.append(tt2)
+    for i in thead_list:
+        i.start()
+    for i in thead_list:
+        i.join()
 
 ##################################获取具体歌手主页的ID#####################################
 gesou_text = []  # 歌手名字列表
@@ -92,6 +119,7 @@ def song_index(id,name):
     s.switch_to_frame("contentFrame")
     s.find_element_by_id('artist-top50')
     data=s.page_source
+    s.quit()
     with open(name+".html","w",encoding="utf-8") as f:
         f.write(str(data))
     soup=BeautifulSoup(open(name+".html","r",encoding="utf-8"),'html.parser')
@@ -134,7 +162,7 @@ def song_down(sname):
             url_res = requests.post(api, headers=headers)
             with open(r"./song/"+sname + ".mp3", "wb") as f:
                 f.write(url_res.content)
-
+    print("Down succssfully!!!")
 def song_down_all(name):
     # 全部下载
     id_ = []
