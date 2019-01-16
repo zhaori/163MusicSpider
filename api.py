@@ -1,20 +1,10 @@
 from config import *
-
+from bs4 import BeautifulSoup
 #第一部分是大的类别比如华语男华语女等  a
 #第二部是华语男、女的歌手主页         b
 #第三部下载歌手主页歌曲              c
 
-if not os.path.exists("song"):
-    os.mkdir("song")
-if not os.path.exists("华语男"):
-    os.mkdir("华语男")
-if not os.path.exists("华语女"):
-    os.mkdir("华语女")
-if not os.path.exists("华语组合"):
-    os.mkdir("华语组合")
-
-
-####################################################################################
+################################更新数据####################################################
 def upgrade_name(api,path,htmlname):
 #更新歌手，歌曲之类的
 #集合所有歌手和歌手的主页地址ID
@@ -127,7 +117,36 @@ def song_index(id,name):
     with open(name+".htm","w",encoding="utf-8") as f2:
         f2.write(str(a))
 
+#################################获取歌词及歌手图片#################################
+class get(object):
+
+    def img(self,name,path='./img/'):
+        #name:歌手名
+        soup=BeautifulSoup(open(name+".html",encoding="utf-8"),"html.parser")
+        soup.find_all("meta")
+        a=str(soup.find_all(attrs={"property":"og:image"}))
+        link = '<meta content=(.*)'
+        img_url = re.findall(link, a)
+        st = ''.join(img_url[0])
+        img_ = st[1:st.find('.jpg')] + ".jpg"
+        url = requests.get(img_)
+        with open(str(path) + name + ".jpg", "wb") as f2:
+            f2.write(url.content)
+
+    def lrc(self,id,name,path='./lrc/'):
+        #id="1320031661"
+        #歌曲id
+        api="http://music.163.com/api/song/lyric?os=pc&id=+"+id+"&lv=-1&kv=-1&tv=-1"
+        song_lrc=requests.get(api)
+        data=json.loads(song_lrc.text)
+        for i in data['lrc']['lyric']:
+            with open(str(path)+name+'.lrc', 'a+', encoding="utf-8") as f:
+                f.writelines(str(i))
+
+
+
 ###############################开始下载歌曲###################################
+g=get()
 def song_down(sname):
     # 下载函数
     id_ = []
@@ -162,7 +181,12 @@ def song_down(sname):
             url_res = requests.post(api, headers=headers)
             with open(r"./song/"+sname + ".mp3", "wb") as f:
                 f.write(url_res.content)
+            g.lrc((song_id['id']),(song_id['song']))
+
     print("Down succssfully!!!")
+    #获取歌词失败，尝试缩进至循环里
+
+
 def song_down_all(name):
     # 全部下载
     id_ = []
@@ -186,6 +210,7 @@ def song_down_all(name):
     for i in name_song:
         name_list.append(i["title"])
 
+
     for i in range(0, 50):
         song_id["song"] = name_list[i]
         song_id["id"] = id_list[i]
@@ -196,3 +221,5 @@ def song_down_all(name):
         with open(sg_path+song_id["song"] + ".mp3", "wb") as f:
             f.write(url_res.content)
             print(song_id["song"])
+        g.lrc(song_id["id"],song_id["song"])
+
