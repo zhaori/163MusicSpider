@@ -184,9 +184,7 @@ def song_down(sname):
             g.lrc((song_id['id']),(song_id['song']))
 
     print("Down succssfully!!!")
-    #获取歌词失败，尝试缩进至循环里
-
-
+   
 def song_down_all(name):
     # 全部下载
     id_ = []
