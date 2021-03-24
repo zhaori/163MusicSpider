@@ -1,78 +1,43 @@
-﻿from api import *
-from config import *
+from Lib.sqlite import Create_db, list_to_str
+from config import cache_db
+from work.Get import get_singer_song, get_song
+from work.Download import down_song, down_img, down_lrc
+import shutil
+import os
 
-os.system('path=%path%;./')
-if not os.path.exists("song"):
-    os.mkdir("song")
-if not os.path.exists("img"):
-    os.mkdir("img")
-if not os.path.exists("lrc"):
-    os.mkdir("lrc")
-if not os.path.exists("华语男"):
-    os.mkdir("华语男")
-if not os.path.exists("华语女"):
-    os.mkdir("华语女")
-if not os.path.exists("华语组合"):
-    os.mkdir("华语组合")
+print('#############################\n'
+      'Welcome to music 163 Spider')
+print("请选择功能选项：\n"
+      "1.下载歌曲，输入歌手名及歌曲名\n"
+      "2.查询歌曲是否存在")
 
 
-xs = "1.更新数据来源  2.下载歌曲"
-print(xs)
-x = input("输入选项：")
-if x == "1":
-    def thead_1():
-        upgrade_name(API,path,htmlname) #男
-    def thead_2():
-        upgrade_name(API2,path2,html_name2)   #女
-    def thead_3():
-        upgrade_name(API3,path3,html_name3)   #组合
-    thead_li=[]
-    t1=threading.Thread(target=thead_1)
-    t2=threading.Thread(target=thead_2)
-    t3=threading.Thread(target=thead_3)
-    thead_li.append(t1)
-    thead_li.append(t2)
-    thead_li.append(t3)
-    for i in thead_li:
-        i.start()
-    for i in thead_li:
-        i.join()
+def table_from_db(value):
+    if value in [list_to_str(i) for i in Create_db(path=cache_db).search_table()]:
+        return True
+    else:
+        return False
 
-elif x == "2":
-    print("1.下载指定歌曲  2.下载歌手主页所有歌曲")
-    a = input("输入选项：")
-    g = get()
-    if a == "1":
-        numm = input("男歌手为0，女歌手为1  ：")
-        sname = input("输入歌手名：")
-        ssname = input("输入歌曲名：")
-        if numm == "0":
-            id = set_man(html_name1,sname)
-            song_index(str(id),sname)
-            song_down(ssname)
-            g.img(sname)
-            #g.lrc(id,ssname)
-            g.lrc(song_id['id'], song_id['song'])
-        elif numm == "1":
-            id = set_womam(html_name2,sname)
-            song_index(str(id),sname)
-            song_down(ssname)
-            g.img(sname)
-            #g.lrc(id,ssname)
 
-    elif a == "2":
-        nu = input("男歌手为0，女歌手为1  :")
-        sgname = input("输入歌手名：")
-        sg_path = "./song/" + sgname + "/"
-        if not os.path.exists(sgname):
-            os.mkdir(sg_path)
-        if nu == "0":
-            id = set_man(html_name1,sgname)
-            song_index(str(id),sgname)
-            song_down_all(sgname)
-            g.img(sgname)
-        elif nu == "1":
-            iid = set_womam(htmlname=html_name2, name=sgname)
-            song_index(str(iid),sgname)
-            song_down_all(sgname)
-            g.img(sgname)
+def know_singer_song(singer_name, song_name):
+    if table_from_db(singer_name) is False:
+        get_singer_song(singer_name)
+    else:
+        down_song(get_song(singer_name, song_name), song_name)
+
+
+def down_all_index_song(singer_name, rule=None):
+    if table_from_db(singer_name) is False:
+        get_singer_song(singer_name)
+    if rule is None:
+        pass
+    elif rule == '名称':
+        if os.path.exists(f'./song/{singer_name}') is False:
+            os.makedirs(f'./song/{singer_name}')
+
+    for i in Create_db(table=singer_name, path=cache_db).search_sql("song_name, song_id"):
+        down_song(i[1], i[0], f'./song/{singer_name}')
+
+
+# down_all_index_song('周深', '名称')
+know_singer_song('周深', '浅浅')
